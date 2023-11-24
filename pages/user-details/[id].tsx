@@ -4,6 +4,7 @@ import axios from "axios";
 import PostCard from "@/components/post-card";
 import { useRouter } from "next/router";
 import ClockTime from "@/components/clock-time";
+import { API_BASE_URL } from "@/utils/constants";
 
 interface UserDetailsProps {
   user: User;
@@ -12,11 +13,16 @@ interface UserDetailsProps {
 
 const UserDetails: NextPage<UserDetailsProps> = ({ user, posts }) => {
   const router = useRouter();
+
+  const goBack = () => {
+    router?.push("/");
+  };
+
   return (
     <div className="main">
       <div className="row w-100">
         <div className="col-3 mb-3">
-          <button className="btn btn-dark" onClick={() => router?.push("/")}>
+          <button className="btn btn-dark" onClick={goBack}>
             Back
           </button>
         </div>
@@ -26,25 +32,13 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, posts }) => {
       </div>
       <h2 className="my-5">Profile Page</h2>
       <div className="user row">
-        <div className="col-12 col-sm-6 mb-2">
-          Name:
-          <span className="fw-bold"> {user.name} </span>
-        </div>
-        <div className="col-12 col-sm-6 mb-2">
-          Address:
-          <span className="fw-bold">
-            {" "}
-            {`${user.address?.street}, ${user?.address?.suite} ${user?.address?.city} - ${user?.address?.zipcode}`}
-          </span>
-        </div>
-        <div className="col-12 col-sm-6 mb-2">
-          Username:
-          <span className="fw-bold"> {user?.username}</span>
-        </div>
-        <div className="col-12 col-sm-6 mb-2 ">
-          Email | Phone :
-          <span className="fw-bold"> {`${user?.email} | ${user?.phone}`}</span>
-        </div>
+        {renderUserDetail("Name", user.name)}
+        {renderUserDetail(
+          "Address",
+          `${user.address?.street}, ${user?.address?.suite} ${user?.address?.city} - ${user?.address?.zipcode}`
+        )}
+        {renderUserDetail("Username", user?.username)}
+        {renderUserDetail("Email | Phone", `${user?.email} | ${user?.phone}`)}
       </div>
       <div className="row my-5">
         {posts?.map((post) => (
@@ -57,25 +51,28 @@ const UserDetails: NextPage<UserDetailsProps> = ({ user, posts }) => {
   );
 };
 
+const renderUserDetail = (label: string, value: string) => (
+  <div className="col-12 col-sm-6 mb-2" key={label}>
+    {label}:<span className="fw-bold"> {value}</span>
+  </div>
+);
+
 export const getServerSideProps: GetServerSideProps<UserDetailsProps> = async ({
   params,
 }) => {
   const userId = params?.id;
 
   try {
-    // Fetch user details using the ID passed in the route parameters
     const [userResponse, postsResponse] = await Promise.all([
-      axios.get(`https://jsonplaceholder.typicode.com/users/${userId}`),
-      axios.get(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`),
+      axios.get(`${API_BASE_URL}/users/${userId}`),
+      axios.get(`${API_BASE_URL}/posts?userId=${userId}`),
     ]);
 
     const user: User = userResponse.data;
     const posts: Post[] = postsResponse.data;
 
-    // Pass user and post details to the page via props
     return { props: { user, posts } };
   } catch (error) {
-    // Handle errors, for example, if the user is not found
     console.error("Error fetching user details:", error);
     return { notFound: true };
   }

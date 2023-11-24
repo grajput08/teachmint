@@ -2,6 +2,7 @@ import axios from "axios";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { User, Post } from "@/components/interface/types";
+import { API_BASE_URL } from "@/utils/constants";
 
 interface HomeProps {
   users: User[];
@@ -49,8 +50,8 @@ const Home: NextPage<HomeProps> = ({ users, posts }) => {
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   // Fetch data from the external API
   const [usersResponse, postsResponse] = await Promise.all([
-    axios.get("https://jsonplaceholder.typicode.com/users"),
-    axios.get("https://jsonplaceholder.typicode.com/posts"),
+    axios.get(`${API_BASE_URL}/users`),
+    axios.get(`${API_BASE_URL}/posts`),
   ]);
 
   const users: User[] = usersResponse.data;

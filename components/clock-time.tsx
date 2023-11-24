@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { TIME_API_BASE_URL, DEFAULT_COUNTRY } from "@/utils/constants";
 
 interface Country {
   value: string;
@@ -8,16 +9,15 @@ interface Country {
 
 const ClockTime: React.FC = () => {
   const [countries, setCountries] = useState<Country[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    "America/Argentina/Salta"
-  );
+  const [selectedCountry, setSelectedCountry] =
+    useState<string>(DEFAULT_COUNTRY);
   const [currentTime, setCurrentTime] = useState<string>("");
   const [isClockRunning, setIsClockRunning] = useState<boolean>(true);
 
   useEffect(() => {
     // Fetch the list of countries
     axios
-      .get<string[]>("http://worldtimeapi.org/api/timezone")
+      .get<string[]>(`${TIME_API_BASE_URL}`)
       .then((response) =>
         setCountries(
           response.data.map((country) => ({ value: country, label: country }))
@@ -33,10 +33,9 @@ const ClockTime: React.FC = () => {
         const response = await axios.get(
           `http://worldtimeapi.org/api/timezone/${selectedCountry}`
         );
-        const utcDateTime = new Date(response.data.utc_datetime);
-        const formattedTime = utcDateTime.toLocaleTimeString("en-US", {
-          hour12: false,
-        });
+        const formattedTime = response.data.datetime
+          ?.split("T")[1]
+          .split(".")[0];
         setCurrentTime(formattedTime);
       } catch (error) {
         console.error("Error fetching current time:", error);
@@ -51,6 +50,18 @@ const ClockTime: React.FC = () => {
     }
   }, [selectedCountry, isClockRunning]);
 
+  useEffect(() => {
+    // Fetch the list of countries
+    axios
+      .get<string[]>("http://worldtimeapi.org/api/timezone")
+      .then((response) =>
+        setCountries(
+          response.data.map((country) => ({ value: country, label: country }))
+        )
+      )
+      .catch((error) => console.error("Error fetching countries:", error));
+  }, []);
+
   const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCountry(event.target.value);
   };
@@ -62,11 +73,7 @@ const ClockTime: React.FC = () => {
   return (
     <div className="d-flex align-items-center flex-wrap justify-content-end">
       <div className="mb-3">
-        <select
-          id="countryDropdown"
-          onChange={handleCountryChange}
-          value={selectedCountry}
-        >
+        <select onChange={handleCountryChange} value={selectedCountry}>
           <option value="" disabled>
             Select a country
           </option>
