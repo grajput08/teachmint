@@ -31,7 +31,7 @@ const ClockTime: React.FC = () => {
     const fetchTime = async () => {
       try {
         const response = await axios.get(
-          `http://worldtimeapi.org/api/timezone/${selectedCountry}`
+          `${TIME_API_BASE_URL}/timezone/${selectedCountry}`
         );
         const formattedTime = response.data.datetime
           ?.split("T")[1]
@@ -53,7 +53,7 @@ const ClockTime: React.FC = () => {
   useEffect(() => {
     // Fetch the list of countries
     axios
-      .get<string[]>("http://worldtimeapi.org/api/timezone")
+      .get<string[]>(`${TIME_API_BASE_URL}/api/timezone`)
       .then((response) =>
         setCountries(
           response.data.map((country) => ({ value: country, label: country }))
