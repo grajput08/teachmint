@@ -17,7 +17,7 @@ const ClockTime: React.FC = () => {
   useEffect(() => {
     // Fetch the list of countries
     axios
-      .get<string[]>(`${TIME_API_BASE_URL}`)
+      .get<string[]>(`${TIME_API_BASE_URL}/timezone`)
       .then((response) =>
         setCountries(
           response.data.map((country) => ({ value: country, label: country }))
